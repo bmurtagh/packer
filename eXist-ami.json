@@ -1,0 +1,86 @@
+{
+  "variables": {
+    "aws_access_key":            "{{env `AWS_ACCESS_KEY`}}",
+    "aws_secret_key":            "{{env `AWS_SECRET_KEY`}}",
+    "source_ami":                "ami-1c221e76",
+    "subnet_id":                 "subnet-425f7e1a",
+    "vpc_id":                    "vpc-7408b213",
+    "project":                   "nabu-web-server-ami-prebake",
+    "local_modules_dir":         "../puppet/environments/production/modules",
+    "local_manifests_dir":       "../puppet/environments/production/manifests",
+    "build_number":              "Unspecified",
+    "build_name":                "nabu-web-server-prebake {{timestamp}}",
+    "service_name":              "web-server",
+    "os_distro":                 "CentOS",
+    "os_version":                "6",
+    "ssh_user":                  "centos"
+  },
+
+  "builders": [
+    {
+      "name":                         "aws",
+      "type":                         "amazon-ebs",
+      "ami_name":                     "nabu-web-server-prebake {{timestamp}}",
+      "access_key":                   "{{user `aws_access_key`}}",
+      "secret_key":                   "{{user `aws_secret_key`}}",
+      "ami_users":                    ["674197184650"],
+      "region":                       "us-east-1",
+      "source_ami":                   "{{user `source_ami`}}",
+      "iam_instance_profile":         "usp-s3-non-con",
+      "instance_type":                "t2.micro",
+      "associate_public_ip_address":  true,
+      "ssh_private_ip":               false,
+      "ssh_username":                 "{{user `ssh_user`}}",
+      "subnet_id":                    "{{user `subnet_id`}}",
+      "vpc_id":                       "{{user `vpc_id`}}",
+      "ssh_pty":                      true,
+      "run_tags":{
+         "project":                  "{{user `project`}}",
+         "createdTime":              "{{isotime \"20060102 15:04:05 MST\"}}",
+         "buildNumber":              "{{user `build_number`}}",
+         "Name":                     "{{user `build_name`}}",
+         "Service":                  "{{user `service_name`}}",
+         "OS_Distro":                "{{user `os_distro`}}",
+         "OS_Version":               "{{user `os_version`}}"
+      },
+      "tags":{
+         "project":                  "{{user `project`}}",
+         "createdTime":              "{{isotime \"20060102 15:04:05 MST\"}}",
+         "buildNumber":              "{{user `build_number`}}",
+         "Name":                     "{{user `build_name`}}",
+         "Service":                  "{{user `service_name`}}",
+         "OS_Distro":                "{{user `os_distro`}}",
+         "OS_Version":               "{{user `os_version`}}"
+      }
+    }
+  ],
+
+  "provisioners": [
+    {
+      "type": "shell",
+      "execute_command":  "{{ .Vars }} sudo -E -S bash '{{ .Path }}'",
+      "script": "scripts/prebake-exist-ami-bootstrap.sh"
+    },
+    {
+      "type": "puppet-masterless",
+      "manifest_file": "{{ user `local_manifests_dir` }}/site.pp",
+      "module_paths": [
+        "{{ user `local_modules_dir` }}"
+      ]
+    },
+    {
+      "type": "shell",
+      "execute_command":  "{{ .Vars }} sudo -E -S bash '{{ .Path }}'",
+      "script": "scripts/cleanup.sh"
+    }
+  ],
+
+  "post-processors": [
+    {
+      "type": "json-updater",
+      "ami_id": {
+        "target/nabu-web-server-prebake.terraform.tfvars.json": ["nabu-web-server-ami-id"]
+      }
+    }
+  ]
+}
