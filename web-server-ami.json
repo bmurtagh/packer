@@ -59,10 +59,11 @@
     {
       "type": "shell",
       "execute_command":  "{{ .Vars }} sudo -E -S bash '{{ .Path }}'",
-      "script": "scripts/prebake-ami-bootstrap.sh"
+      "script": "scripts/prebake-web-ami-bootstrap.sh"
     },
     {
       "type": "puppet-masterless",
+      "puppet_bin_dir": "/opt/puppetlabs/bin",
       "manifest_file": "{{ user `local_manifests_dir` }}/site.pp",
       "module_paths": [
         "{{ user `local_modules_dir` }}"

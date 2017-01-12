@@ -13,6 +13,6 @@ yum -y install puppet-agent &&
 source /etc/profile.d/puppet-agent.sh &&
 
 # Start the Puppet service
-puppet resource service puppet enable=true ensure=running
+puppet resource service puppet enable=true # ensure=running
 
 # EOF

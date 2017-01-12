@@ -59,7 +59,7 @@
     {
       "type": "shell",
       "execute_command":  "{{ .Vars }} sudo -E -S bash '{{ .Path }}'",
-      "script": "scripts/prebake-ami-bootstrap.sh"
+      "script": "scripts/prebake-solr-ami-bootstrap.sh"
     },
     {
       "type": "puppet-masterless",
